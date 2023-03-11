@@ -5,7 +5,7 @@ terraform {
     region  = "eu-west-1"
     acl     = "bucket-owner-full-control"
     encrypt = "true"
-    profile = "fii-practic"
+    profile = "default"
   }
 }
 
