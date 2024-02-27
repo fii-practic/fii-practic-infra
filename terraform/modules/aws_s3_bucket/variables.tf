@@ -1,6 +1,6 @@
 variable "bucket" {
   description = "The name of the bucket."
-  default = ""
+  default     = ""
 }
 
 variable "acl" {
@@ -10,7 +10,7 @@ variable "acl" {
 
 
 variable "tags" {
-  type        = map
+  type        = map(any)
   description = "A mapping of tags to assign to the resource."
   default     = {}
 }
@@ -23,13 +23,13 @@ variable "force_destroy" {
 variable "website" {
   description = "A website object."
   default     = {}
-  type        = map
+  type        = map(any)
 }
 
 variable "cors_rule" {
   description = "A rule of Cross-Origin Resource Sharing."
   default     = {}
-  type        = map
+  type        = map(any)
 }
 
 variable "versioning" {
@@ -40,13 +40,13 @@ variable "versioning" {
 variable "logging" {
   description = "A settings of bucket logging."
   default     = {}
-  type        = map
+  type        = map(any)
 }
 
 variable "lifecycle_rule" {
   description = "A configuration of object lifecycle management."
   default     = []
-  type        = list
+  type        = list(any)
 }
 
 variable "region" {
@@ -62,13 +62,13 @@ variable "request_payer" {
 variable "replication_configuration" {
   description = "A configuration of replication configuration."
   default     = {}
-  type        = map
+  type        = map(any)
 }
 
 variable "server_side_encryption_configuration" {
   description = "A configuration of server-side encryption configuration."
   default     = {}
-  type        = map
+  type        = map(any)
 }
 
 variable "principal" {

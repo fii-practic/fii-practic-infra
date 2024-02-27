@@ -7,7 +7,7 @@ data "aws_ami" "amzn_ami" {
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-kernel-5.10-*"]
+    values = ["al2023-ami-2023*"]
   }
 
   filter {
@@ -15,5 +15,10 @@ data "aws_ami" "amzn_ami" {
     values = ["hvm"]
   }
 
-  owners = ["137112412989"]
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  owners = ["amazon"]
 }

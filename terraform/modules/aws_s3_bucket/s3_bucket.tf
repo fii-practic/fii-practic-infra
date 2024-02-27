@@ -1,11 +1,11 @@
 resource "aws_s3_bucket" "s3_bucket" {
-  bucket                               = var.bucket
-  acl                                  = var.acl
-  force_destroy                        = var.force_destroy
-  request_payer                        = var.request_payer
+  bucket        = var.bucket
+  acl           = var.acl
+  force_destroy = var.force_destroy
+  request_payer = var.request_payer
 
   versioning {
-    enabled      = var.versioning
+    enabled = var.versioning
   }
 
   lifecycle_rule {

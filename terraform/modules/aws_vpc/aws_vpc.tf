@@ -19,8 +19,9 @@ resource "aws_vpc" "local_vpc" {
   instance_tenancy     = "default"
 
   tags = {
-    Name    = "${var.name}-vpc"
-    Creator = "Managed by Terraform"
+    Name         = "${var.name}-${var.env}-vpc"
+    Environment  = var.env
+    Creator      = var.creator
   }
 
   # lifecycle {
@@ -38,8 +39,9 @@ resource "aws_subnet" "public" {
 
   tags = {
     Type         = "public"
-    Name         = "${var.name}-public"
-    Creator      = "Managed by Terraform"
+    Name         = "${var.name}-${var.env}-public"
+    Environment  = var.env
+    Creator      = var.creator
     Zone = substr( element(data.aws_availability_zones.available.names, count.index), -1, 1)
   }
 
@@ -58,14 +60,15 @@ resource "aws_subnet" "private" {
 
   tags = {
     Type         = "private"
-    Name         = "${var.name}-private"
-    Creator      = "Managed by Terraform"
+    Name         = "${var.name}-${var.env}-private"
+    Environment  = var.env
+    Creator      = var.creator
     Zone         = substr(element(data.aws_availability_zones.available.names, count.index), -1, 1)
   }
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }
 
 # Create Internet Gateway
@@ -73,117 +76,39 @@ resource "aws_internet_gateway" "default" {
   vpc_id = aws_vpc.local_vpc.id
 
   tags = {
-    Creator = "Managed by Terraform"
+    Name         = "${var.name}-${var.env}-igw"
+    Environment  = var.env
+    Creator      = var.creator
   }
 }
 
-//resource "aws_security_group" "nat_vpn_instance_sg" {
-//  name        = "nat-instance-sg"
-//  description = "Allow trafic to and from nat instance"
-//  vpc_id      = aws_vpc.local_vpc.id
-//
-//  ingress {
-//    from_port = 22
-//    protocol  = "tcp"
-//    to_port   = 22
-//    cidr_blocks = var.trusted_cidrs
-//    description = "SSH acess from IC appartment"
-//  }
-//
-//  ingress {
-//    from_port = 1194
-//    protocol  = "udp"
-//    to_port   = 1194
-//    cidr_blocks = ["0.0.0.0/0"]
-//    description = "Used by your clients to initiate UDP based VPN sessions to the VPN server"
-//  }
-//
-//  ingress {
-//    from_port = 81
-//    protocol  = "tcp"
-//    to_port   = 81
-//    cidr_blocks = ["0.0.0.0/0"]
-//    description = "Used by OpenVPN Access Server for the Client Web Server"
-//  }
-//
-//  ingress {
-//    from_port = 80
-//    protocol  = "tcp"
-//    to_port   = 80
-//    cidr_blocks = ["0.0.0.0/0"]
-//    description = "Used by Lets Encrypt bot"
-//  }
-//
-//  ingress {
-//    from_port = 0
-//    protocol  = "-1"
-//    to_port   = 0
-//    cidr_blocks = [var.cidr_block]
-//    description = "Allow trafic inbound from all aws subnets"
-//  }
-//
-//  egress {
-//    from_port = 0
-//    protocol = "-1"
-//    to_port = 0
-//    cidr_blocks = ["0.0.0.0/0"]
-//  }
-//}
+# resource "aws_eip" "nat" {
+#   count = var.nat_gateway_count
+#   tags = {
+#    Environment  = var.env
+#    Creator      = var.creator
+#   }
+# }
 
-//resource "aws_instance" "nat_vpn_instance" {
-//  ami                         = var.ami_id
-//  instance_type               = "t3.micro"
-//  key_name                    = aws_key_pair.iconstantinescu.id
-//  associate_public_ip_address = true
-//  source_dest_check           = false
-//  subnet_id                   = aws_subnet.public.0.id
-//  depends_on                  = [aws_internet_gateway.default, aws_security_group.nat_vpn_instance_sg]
-//  vpc_security_group_ids      = [aws_security_group.nat_vpn_instance_sg.id]
-//  disable_api_termination     = true
-//
-//  root_block_device {
-//    volume_type = "gp2"
-//    delete_on_termination = true
-//    volume_size = 20
-//  }
-//
-//  credit_specification {
-//    cpu_credits = "standard"
-//  }
-//
-//  tags = {
-//    Name    = var.name
-//    Creator = "Managed by Terraform"
-//  }
-//
-//  connection {
-//    user        = "clearos"
-//    private_key = file(var.private_key_path)
-//    host        = "vpn.example.com"
-//  }
-//
-//  provisioner "remote-exec" {
-//    inline = [
-//      "sudo echo 'nat-vpn.fiipractic.com' > /etc/hostname",
-//      "sudo yum upgrade -y && sudo init 6"
-//    ]
-//  }
-//}
-
-//resource "aws_route53_record" "nat_vpn_instance" {
-//  zone_id = var.route53_zone_id
-//  name    = "vpn."
-//  type    = "A"
-//  ttl     = "300"
-//  records = [aws_instance.nat_vpn_instance.public_ip]
-//}
+# # Create NAT Gateway
+# resource "aws_nat_gateway" "gw" {
+#   count         = var.nat_gateway_count
+#   allocation_id = element(aws_eip.nat.*.id, count.index)
+#   subnet_id     = element(aws_subnet.public.*.id, count.index)
+#   depends_on    = [aws_internet_gateway.default]
+#   tags = {
+#    Environment  = var.env
+#    Creator      = var.creator
+#   }
+# }
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.local_vpc.id
 
   tags = {
-    Name         = "${var.name}-public"
-    Creator      = "Managed by Terraform"
+    Name         = "${var.name}${var.env}-public"
+    Environment  = var.env
+    Creator      = var.creator
   }
 }
 
@@ -198,8 +123,9 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.local_vpc.id
 
   tags = {
-    Name         = "${var.name}-private"
-    Creator      = "Managed by Terraform"
+    Name         = "${var.name}-${var.env}-private"
+    Environment  = var.env
+    Creator      = var.creator
     Zone = substr(element(data.aws_availability_zones.available.names, count.index), -1, 1)
   }
 }
@@ -208,7 +134,7 @@ resource "aws_route_table" "private" {
 #   count                  = signum(var.nat_gateway_count) * var.private_subnet_count
 #   route_table_id         = element(aws_route_table.private.*.id, count.index)
 #   destination_cidr_block = "0.0.0.0/0"
-#   instance_id            = var.nat_vpn_instance
+#   nat_gateway_id         = element(aws_nat_gateway.gw.*.id, count.index)
 # }
 
 resource "aws_route_table_association" "public" {
@@ -218,9 +144,9 @@ resource "aws_route_table_association" "public" {
 }
 
 # resource "aws_route_table_association" "private" {
+#   count          = "${length(aws_subnet.private.*.id)}"
 #   route_table_id = element(aws_route_table.private.*.id, count.index)
 #   subnet_id      = element(aws_subnet.private.*.id, count.index)
-#   count = "${length(aws_subnet.private.*.id)}"
 # }
 
 resource "aws_vpc_dhcp_options" "options" {
@@ -228,7 +154,8 @@ resource "aws_vpc_dhcp_options" "options" {
   domain_name_servers = var.domain_name_servers
   tags = {
     Account      = var.name
-    Creator      = "Managed by Terraform"
+    Environment  = var.env
+    Creator      = var.creator
   }
 }
 

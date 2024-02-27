@@ -1,6 +1,9 @@
 variable "cidr_block" {
 }
 
+variable "env" {
+}
+
 variable "secondary_cidr_blocks" {
   description = "A list of strings containing the CIDR notation of the entire extra subnet to be split between AZs."
   type = list(string)
@@ -53,20 +56,10 @@ variable "domain_name_servers" {
   default = ["AmazonProvidedDNS"]
 }
 
-//variable "ami_id" {
-//  type = string
-//}
-
-variable "private_key_path" {
-  type = string
-}
-
-variable "trusted_cidrs" {}
-
 variable "nat_gateway_count" {
   default = 1
 }
 
-variable "route53_zone_id" {}
-
-# variable "nat_vpn_instance" {}
+variable "creator" {
+  default = "Managed by Terraform"
+}
