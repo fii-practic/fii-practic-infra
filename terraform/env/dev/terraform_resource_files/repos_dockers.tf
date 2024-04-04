@@ -11,9 +11,3 @@ module "be_app_docker_repo" {
   name      = "docker-levi9-cinema-api"
   team_name = "L9-FeDev"
 }
-
-module "alpine_docker_repo" {
-  source    = "../../modules/aws_ecr"
-  name      = "docker-alpine"
-  team_name = "Levi9-DevOps"
-}

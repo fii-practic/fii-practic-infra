@@ -11,3 +11,5 @@ variable "subnet_ids" {}
 variable "zone_id" {}
 
 variable "cert_arn" {}
+
+variable "domain_name" {}

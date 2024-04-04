@@ -34,8 +34,8 @@ variable "disable_api_termination" {
 }
 
 variable "vpc_security_group_ids" {
-  type        = list(string)
-  default     = []
+  type    = list(string)
+  default = []
 }
 
 variable "tags" {}

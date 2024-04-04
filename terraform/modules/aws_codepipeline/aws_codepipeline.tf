@@ -1,5 +1,12 @@
 resource "aws_s3_bucket" "default_bucket" {
   bucket = "${var.name}-codepipeline-bucket"
+
+  tags = {
+    Environment = var.environment
+    Team        = var.team_name
+    Description = var.description
+    Creator     = var.creator
+  }
 }
 
 resource "aws_iam_role" "default_role" {
@@ -89,8 +96,8 @@ resource "aws_codepipeline" "dafault_codepipeline" {
       output_artifacts = ["source_output"]
 
       configuration = {
-        RepositoryName = var.name
-        BranchName     = "master"
+        RepositoryName       = var.name
+        BranchName           = "main"
         OutputArtifactFormat = "CODEBUILD_CLONE_REF"
         PollForSourceChanges = "false"
       }
@@ -139,11 +146,74 @@ resource "aws_codepipeline" "dafault_codepipeline" {
     }
   }
 
-    tags = {
-        Environment = var.environment
-        Team        = var.team_name
-        Description = var.description
-    }
+  tags = {
+    Environment = var.environment
+    Team        = var.team_name
+    Description = var.description
+    Creator     = var.creator
+  }
 }
 
 
+resource "aws_iam_role" "event_role" {
+  name = "${var.name}-codepipeline-rule-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "events.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "codepipeline_event_rule_policy" {
+  name = "${var.name}-codepipeline_policy"
+  role = aws_iam_role.event_role.id
+
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "codepipeline:StartPipelineExecution"
+        ],
+        "Resource" : [
+          aws_codepipeline.dafault_codepipeline.arn
+        ]
+      }
+    ]
+  })
+
+}
+
+resource "aws_cloudwatch_event_rule" "default_event_rule" {
+  name        = "codepipeline-${var.name}-event-rule"
+  description = "Amazon CloudWatch Events rule to automatically start your pipeline when a change occurs in the AWS CodeCommit source repository and branch."
+
+  event_pattern = jsonencode({
+    "source" : ["aws.codecommit"],
+    "detail-type" : ["CodeCommit Repository State Change"],
+    "resources" : [var.code_repo_arn],
+    "detail" : {
+      "event" : ["referenceCreated", "referenceUpdated"],
+      "referenceType" : ["branch"],
+      "referenceName" : ["main"]
+    }
+  })
+}
+
+resource "aws_cloudwatch_event_target" "pipeline" {
+  rule      = aws_cloudwatch_event_rule.default_event_rule.name
+  target_id = "${var.name}-taget"
+  arn       = aws_codepipeline.dafault_codepipeline.arn
+  role_arn  = aws_iam_role.event_role.arn
+}

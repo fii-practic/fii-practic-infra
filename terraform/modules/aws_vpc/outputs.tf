@@ -24,7 +24,7 @@ output "route_table_public" {
 
 output "route_table_ids" {
   value = concat([aws_route_table.public.id])
-  
+
   # Enable when private subnets exists:
   #value = concat([aws_route_table.public.id], aws_route_table.private.*.id)
 }

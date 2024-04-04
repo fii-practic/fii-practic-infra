@@ -43,7 +43,7 @@ variable "port" {
 }
 
 variable "subnet_ids" {
-  type = list
+  type        = list(any)
   description = "List of subnets ids where the redis instance can live, eg. [subnet-6412a148,subnet-e18b0185]"
 }
 
@@ -51,7 +51,7 @@ variable "vpc_id" {
 }
 
 variable "trusted_cidrs" {
-  type = list
+  type = list(any)
 }
 
 variable "trusted_security_groups" {

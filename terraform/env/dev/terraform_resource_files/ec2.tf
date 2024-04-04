@@ -56,7 +56,7 @@ module "ec2_instance_local_module" {
 }
 
 module "ec2_instance_public_module" {
-  source  = "terraform-aws-modules/ec2-instance/aws"
+  source = "terraform-aws-modules/ec2-instance/aws"
   #version = "4.3.0"
   version = "5.6.0"
 

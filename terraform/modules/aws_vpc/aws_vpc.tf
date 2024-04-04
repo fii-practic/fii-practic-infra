@@ -19,9 +19,9 @@ resource "aws_vpc" "local_vpc" {
   instance_tenancy     = "default"
 
   tags = {
-    Name         = "${var.name}-${var.env}-vpc"
-    Environment  = var.env
-    Creator      = var.creator
+    Name        = "${var.name}-${var.env}-vpc"
+    Environment = var.env
+    Creator     = var.creator
   }
 
   # lifecycle {
@@ -31,18 +31,18 @@ resource "aws_vpc" "local_vpc" {
 
 # Create public subnets by default 3 (Ireland A,B,C)
 resource "aws_subnet" "public" {
-  count =  length(data.aws_availability_zones.available.names)
+  count                   = length(data.aws_availability_zones.available.names)
   vpc_id                  = aws_vpc.local_vpc.id
   cidr_block              = cidrsubnet(aws_vpc.local_vpc.cidr_block, var.public_newbits, var.public_netnum + count.index)
-  availability_zone       = "${data.aws_availability_zones.available.names[count.index]}"
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = true
 
   tags = {
-    Type         = "public"
-    Name         = "${var.name}-${var.env}-public"
-    Environment  = var.env
-    Creator      = var.creator
-    Zone = substr( element(data.aws_availability_zones.available.names, count.index), -1, 1)
+    Type        = "public"
+    Name        = "${var.name}-${var.env}-public"
+    Environment = var.env
+    Creator     = var.creator
+    Zone        = substr(element(data.aws_availability_zones.available.names, count.index), -1, 1)
   }
 
   # lifecycle {
@@ -52,18 +52,18 @@ resource "aws_subnet" "public" {
 
 # Create private subnets by default 3 (Ireland A,B,C)
 resource "aws_subnet" "private" {
-  count =  length(data.aws_availability_zones.available.names)
+  count                   = length(data.aws_availability_zones.available.names)
   vpc_id                  = aws_vpc.local_vpc.id
   cidr_block              = cidrsubnet(aws_vpc.local_vpc.cidr_block, var.private_newbits, var.private_netnum + count.index)
-  availability_zone       = "${data.aws_availability_zones.available.names[count.index]}"
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = false
 
   tags = {
-    Type         = "private"
-    Name         = "${var.name}-${var.env}-private"
-    Environment  = var.env
-    Creator      = var.creator
-    Zone         = substr(element(data.aws_availability_zones.available.names, count.index), -1, 1)
+    Type        = "private"
+    Name        = "${var.name}-${var.env}-private"
+    Environment = var.env
+    Creator     = var.creator
+    Zone        = substr(element(data.aws_availability_zones.available.names, count.index), -1, 1)
   }
 
   # lifecycle {
@@ -76,9 +76,9 @@ resource "aws_internet_gateway" "default" {
   vpc_id = aws_vpc.local_vpc.id
 
   tags = {
-    Name         = "${var.name}-${var.env}-igw"
-    Environment  = var.env
-    Creator      = var.creator
+    Name        = "${var.name}-${var.env}-igw"
+    Environment = var.env
+    Creator     = var.creator
   }
 }
 
@@ -106,9 +106,9 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.local_vpc.id
 
   tags = {
-    Name         = "${var.name}${var.env}-public"
-    Environment  = var.env
-    Creator      = var.creator
+    Name        = "${var.name}${var.env}-public"
+    Environment = var.env
+    Creator     = var.creator
   }
 }
 
@@ -123,10 +123,10 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.local_vpc.id
 
   tags = {
-    Name         = "${var.name}-${var.env}-private"
-    Environment  = var.env
-    Creator      = var.creator
-    Zone = substr(element(data.aws_availability_zones.available.names, count.index), -1, 1)
+    Name        = "${var.name}-${var.env}-private"
+    Environment = var.env
+    Creator     = var.creator
+    Zone        = substr(element(data.aws_availability_zones.available.names, count.index), -1, 1)
   }
 }
 
@@ -140,7 +140,7 @@ resource "aws_route_table" "private" {
 resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
   subnet_id      = element(aws_subnet.public.*.id, count.index)
-  count = "${length(aws_subnet.public.*.id)}"
+  count          = length(aws_subnet.public.*.id)
 }
 
 # resource "aws_route_table_association" "private" {
@@ -153,9 +153,9 @@ resource "aws_vpc_dhcp_options" "options" {
   domain_name         = var.domain_name
   domain_name_servers = var.domain_name_servers
   tags = {
-    Account      = var.name
-    Environment  = var.env
-    Creator      = var.creator
+    Account     = var.name
+    Environment = var.env
+    Creator     = var.creator
   }
 }
 

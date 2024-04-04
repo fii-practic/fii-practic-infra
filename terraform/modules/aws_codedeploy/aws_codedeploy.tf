@@ -1,13 +1,9 @@
-
-
-
-
 resource "aws_codedeploy_app" "default_app" {
   compute_platform = "ECS"
   name             = "${var.name}-codedeploy-app"
-  tags = {
-    Team         = var.team_name
-    Environment  = var.environment
+  tags_all = {
+    Team        = var.team_name
+    Environment = var.environment
   }
 }
 

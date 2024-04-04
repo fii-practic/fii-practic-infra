@@ -10,10 +10,15 @@ variable "docker_image" {}
 
 variable "ecs_cluster_id" {}
 
-variable "security_groups" {}
-
 variable "target_group_arn" {}
 
 variable "subnets" {}
 
 variable "region" {}
+
+variable "vpc_id" {}
+
+variable "creator" {
+  type    = string
+  default = "Managed by Terraform"
+}

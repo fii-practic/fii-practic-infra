@@ -4,18 +4,18 @@ resource "aws_security_group" "default_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description      = "TLS from VPC"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
@@ -81,7 +81,7 @@ resource "aws_alb_target_group" "api_tg_green" {
   target_type = "ip"
 }
 
-resource "aws_alb_listener" "default_listener_https" {
+resource "aws_lb_listener" "default_listener_https" {
   load_balancer_arn = aws_alb.default_alb.arn
   port              = "443"
   protocol          = "HTTPS"
@@ -89,24 +89,28 @@ resource "aws_alb_listener" "default_listener_https" {
   certificate_arn   = var.cert_arn
 
   default_action {
-    target_group_arn = aws_alb_target_group.default_tg.arn
-    type             = "forward"
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/html"
+      message_body = "<p> Hello FiiPractic, this is default LB response</p>"
+      status_code  = "200"
+    }
   }
 }
 
 # Forward action
 resource "aws_alb_listener_rule" "fe_routing" {
-  listener_arn = aws_alb_listener.default_listener_https.arn
+  listener_arn = aws_lb_listener.default_listener_https.arn
   priority     = 100
 
   action {
-    type = "forward"
+    type             = "forward"
     target_group_arn = aws_alb_target_group.fe_tg_blue.arn
   }
 
   condition {
     host_header {
-      values = ["*.fii-practic.ml"]
+      values = ["fe.${var.domain_name}"]
     }
   }
 
@@ -116,17 +120,17 @@ resource "aws_alb_listener_rule" "fe_routing" {
 }
 
 resource "aws_alb_listener_rule" "api_routing" {
-  listener_arn = aws_alb_listener.default_listener_https.arn
+  listener_arn = aws_lb_listener.default_listener_https.arn
   priority     = 99
 
   action {
-    type = "forward"
+    type             = "forward"
     target_group_arn = aws_alb_target_group.api_tg_blue.arn
   }
 
   condition {
     host_header {
-      values = ["api.fii-practic.ml"]
+      values = ["api.${var.domain_name}"]
     }
   }
 
@@ -149,6 +153,17 @@ resource "aws_route53_record" "fe_record" {
 resource "aws_route53_record" "api_record" {
   zone_id = var.zone_id
   name    = "api"
+  type    = "A"
+  alias {
+    name                   = element(aws_alb.default_alb.*.dns_name, 0)
+    zone_id                = element(aws_alb.default_alb.*.zone_id, 0)
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "default_record" {
+  zone_id = var.zone_id
+  name    = "alb"
   type    = "A"
   alias {
     name                   = element(aws_alb.default_alb.*.dns_name, 0)

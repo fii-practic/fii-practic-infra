@@ -1,9 +1,10 @@
 resource "aws_cloudwatch_log_group" "default_log_group" {
   name              = "/aws/codebuild/${var.name}"
   retention_in_days = 7
-  tags              = {
-    Team         = var.team_name
-    Environment  = var.environment
+  tags = {
+    Team        = var.team_name
+    Environment = var.environment
+    Creator     = var.creator
   }
 
 }
@@ -88,7 +89,7 @@ resource "aws_codebuild_project" "default" {
 
   logs_config {
     cloudwatch_logs {
-      group_name  = aws_cloudwatch_log_group.default_log_group.name
+      group_name = aws_cloudwatch_log_group.default_log_group.name
     }
 
   }
@@ -99,13 +100,15 @@ resource "aws_codebuild_project" "default" {
     git_clone_depth = 0
 
     git_submodules_config {
-        fetch_submodules = false
+      fetch_submodules = false
     }
   }
 
   source_version = "refs/heads/master"
 
   tags = {
-    Environment = "var.environment"
+    Team        = var.team_name
+    Environment = var.environment
+    Creator     = var.creator
   }
 }

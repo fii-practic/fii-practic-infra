@@ -8,9 +8,9 @@ resource "aws_cloudtrail" "trail" {
 }
 
 module "trail_bucket" {
-  source      = "../s3_bucket"
-  bucket      = "${var.account}-audit-trail"
-  acl         = "private"
+  source = "../s3_bucket"
+  bucket = "${var.account}-audit-trail"
+  acl    = "private"
 
   tags = {
     Name    = "var.account-audit-trail"
@@ -21,7 +21,7 @@ module "trail_bucket" {
 
 resource "aws_s3_bucket_policy" "trail_bucket_policy" {
   bucket = module.trail_bucket.id
-  policy =<<POLICY
+  policy = <<POLICY
 {
     "Version": "2012-10-17",
     "Statement": [

@@ -7,14 +7,15 @@ resource "aws_ecr_repository" "default" {
     scan_on_push = var.scan_images_on_push
   }
 
-  tags            = {
-    Name = var.name
-    Team = var.team_name
+  tags = {
+    Name    = var.name
+    Team    = var.team_name
+    Creator = var.creator
   }
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }
 
 resource "aws_ecr_lifecycle_policy" "default" {

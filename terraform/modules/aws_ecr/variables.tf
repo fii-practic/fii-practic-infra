@@ -28,3 +28,8 @@ variable "image_tag_mutability" {
 }
 
 variable "team_name" {}
+
+variable "creator" {
+  type    = string
+  default = "Managed by Terraform"
+}

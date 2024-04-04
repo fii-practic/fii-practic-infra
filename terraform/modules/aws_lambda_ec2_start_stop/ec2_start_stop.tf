@@ -62,7 +62,7 @@ data "archive_file" "ec2-start-stop" {
 
 data "aws_security_group" "default_vpc_sg" {
   filter {
-    name = "group-name"
+    name   = "group-name"
     values = ["default"]
   }
 }
