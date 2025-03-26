@@ -1,0 +1,4 @@
+resource "aws_key_pair" "ic_key" {
+  key_name   = "iulian-key"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDACOzQhji5kIkUPtjMO/tyPPYiVMz+JvvDJX56oY/rwrzydv2aVDyOM6EQcTnlNRnOT5bA7Ml2Vb5EVLgXs3c6tY8cMrDD1qmiN4cA1umHAs3prx3PpfVRcZ7QCvudNkBP0osovkT3QzFhcikboAeTVNhDg53C96h+g9vSxh5+pYHqKEYrZ+46hEXdTOZHLiWbtNy1iM/TEMdiuNt2SPrmaHRuzVHrKI+Lldee0t7B3ZEyd1Kzt/ueHc6lUmk7k069TdqENvN5dJLH2cfScpWoflJervSmJmQd7KOD/NEL5qCx/Bns5qKDzjvxW7EuRS1+9nsHDZ7eG60dVO8zKyEj iulian@x1"
+}
