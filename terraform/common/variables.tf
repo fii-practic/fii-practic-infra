@@ -25,7 +25,7 @@ variable "account_ids" {
   type = map(any)
 
   default = {
-    dev  = "891377043185"
+    dev  = "954976320138"
     prod = "991287142927"
   }
 }
@@ -65,3 +65,6 @@ variable "arn_central_backup_account_id" {
 variable "central_backup_account_name" {
   default = "demo_backup"
 }
+
+
+

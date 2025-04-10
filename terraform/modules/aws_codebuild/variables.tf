@@ -4,7 +4,7 @@ variable "environment" {}
 
 variable "team_name" {}
 
-variable "codecommit_repo" {}
+variable "github_repo" {}
 
 variable "description" {}
 
