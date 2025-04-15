@@ -1,7 +1,7 @@
 resource "aws_codedeploy_app" "default_app" {
   compute_platform = "ECS"
   name             = "${var.name}-codedeploy-app"
-  tags_all = {
+  tags = {
     Team        = var.team_name
     Environment = var.environment
   }
@@ -28,8 +28,46 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "AWSCodeDeployRole" {
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
   role       = aws_iam_role.default_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "AWSCodeDeployRoleForECS" {
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS"
+  role       = aws_iam_role.default_role.name
+}
+
+
+# Add additional permissions if needed
+resource "aws_iam_role_policy" "codedeploy_policy" {
+  name = "codedeploy_policy"
+  role = aws_iam_role.default_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecs:DescribeServices",
+          "ecs:CreateTaskSet",
+          "ecs:UpdateServicePrimaryTaskSet",
+          "ecs:DeleteTaskSet",
+          "elasticloadbalancing:DescribeTargetGroups",
+          "elasticloadbalancing:DescribeListeners",
+          "elasticloadbalancing:ModifyListener",
+          "elasticloadbalancing:DescribeRules",
+          "elasticloadbalancing:ModifyRule",
+          "lambda:InvokeFunction",
+          "cloudwatch:DescribeAlarms",
+          "sns:Publish",
+          "s3:GetObject",
+          "s3:GetObjectVersion"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
 }
 
 resource "aws_codedeploy_deployment_group" "default_deployment_group" {

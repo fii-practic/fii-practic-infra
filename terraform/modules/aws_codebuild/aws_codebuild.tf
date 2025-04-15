@@ -76,7 +76,7 @@ resource "aws_codebuild_project" "default" {
   service_role  = aws_iam_role.default.arn
 
   artifacts {
-    type = "NO_ARTIFACTS"
+    type = "CODEPIPELINE"
   }
 
   environment {
@@ -85,6 +85,11 @@ resource "aws_codebuild_project" "default" {
     type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "CODEBUILD"
     privileged_mode             = true
+
+    environment_variable {
+      name  = "IMAGE_REPO_NAME"
+      value = var.name
+    }
   }
 
   logs_config {
@@ -95,16 +100,11 @@ resource "aws_codebuild_project" "default" {
   }
 
   source {
-    type            = "CODECOMMIT"
-    location        = var.codecommit_repo
-    git_clone_depth = 0
-
-    git_submodules_config {
-      fetch_submodules = false
-    }
+    type      = "CODEPIPELINE"
+    buildspec = "buildspec.yml"
   }
 
-  source_version = "refs/heads/master"
+  source_version = "refs/heads/main"
 
   tags = {
     Team        = var.team_name

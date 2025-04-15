@@ -1,5 +1,17 @@
+resource "aws_codestarconnections_connection" "github" {
+  name          = var.codestar_connection_name
+  provider_type = "GitHub"
+
+  tags = {
+    Environment = var.environment
+    Team        = var.team_name
+    Description = var.description
+    Creator     = var.creator
+  }
+}
+
 resource "aws_s3_bucket" "default_bucket" {
-  bucket = "${var.name}-codepipeline-bucket"
+  bucket = "${var.name}-codepipeline-${var.account_id}-s3"
 
   tags = {
     Environment = var.environment
@@ -59,9 +71,30 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
       "Resource": "*"
     },
     {
+      "Effect" : "Allow",
+      "Action" : [
+        "codedeploy:*"
+      ],
+      "Resource" : "*"
+    },
+    {
+      "Effect" : "Allow",
+      "Action" : [
+        "ecs:*"
+      ],
+      "Resource" : "*"
+    },
+    {
+      "Effect" : "Allow",
+      "Action" : [
+        "iam:PassRole"
+      ],
+      "Resource" : "*"
+    },
+    {
       "Effect": "Allow",
       "Action": [
-        "codecommit:*"
+        "codestar-connections:UseConnection"
       ],
       "Resource": "*"
     }
@@ -78,6 +111,7 @@ resource "aws_iam_role_policy_attachment" "attach_AdministratorAccessPolicy" {
 resource "aws_codepipeline" "dafault_codepipeline" {
   name     = "${var.name}-pipeline"
   role_arn = aws_iam_role.default_role.arn
+  pipeline_type = "V2"
 
   artifact_store {
     location = aws_s3_bucket.default_bucket.bucket
@@ -91,15 +125,14 @@ resource "aws_codepipeline" "dafault_codepipeline" {
       name             = "Source-${var.name}-action"
       category         = "Source"
       owner            = "AWS"
-      provider         = "CodeCommit"
+      provider         = "CodeStarSourceConnection"
       version          = "1"
       output_artifacts = ["source_output"]
 
       configuration = {
-        RepositoryName       = var.name
-        BranchName           = "main"
-        OutputArtifactFormat = "CODEBUILD_CLONE_REF"
-        PollForSourceChanges = "false"
+        ConnectionArn    = aws_codestarconnections_connection.github.arn
+        FullRepositoryId = "${var.github_owner}/${var.github_repo}"
+        BranchName       = var.github_branch
       }
     }
   }
@@ -124,7 +157,6 @@ resource "aws_codepipeline" "dafault_codepipeline" {
 
   stage {
     name = "Deploy-${var.name}-stage"
-
     action {
       name            = "Deploy-${var.name}-action"
       category        = "Deploy"
@@ -195,25 +227,8 @@ resource "aws_iam_role_policy" "codepipeline_event_rule_policy" {
 
 }
 
-resource "aws_cloudwatch_event_rule" "default_event_rule" {
-  name        = "codepipeline-${var.name}-event-rule"
-  description = "Amazon CloudWatch Events rule to automatically start your pipeline when a change occurs in the AWS CodeCommit source repository and branch."
 
-  event_pattern = jsonencode({
-    "source" : ["aws.codecommit"],
-    "detail-type" : ["CodeCommit Repository State Change"],
-    "resources" : [var.code_repo_arn],
-    "detail" : {
-      "event" : ["referenceCreated", "referenceUpdated"],
-      "referenceType" : ["branch"],
-      "referenceName" : ["main"]
-    }
-  })
-}
 
-resource "aws_cloudwatch_event_target" "pipeline" {
-  rule      = aws_cloudwatch_event_rule.default_event_rule.name
-  target_id = "${var.name}-taget"
-  arn       = aws_codepipeline.dafault_codepipeline.arn
-  role_arn  = aws_iam_role.event_role.arn
-}
+
+
+

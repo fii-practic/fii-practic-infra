@@ -1,6 +1,6 @@
 # ECS Service
 resource "aws_cloudwatch_log_group" "default_log_group_ecs" {
-  name              = "/aws/ecs/${var.name}"
+  name              = "/ecs/${var.name}"
   retention_in_days = 7
   tags = {
     Team        = var.team_name
