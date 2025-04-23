@@ -1,14 +1,3 @@
-resource "aws_cloudwatch_log_group" "default_log_group" {
-  name              = "/ecs/${var.name}"
-  retention_in_days = 7
-  tags = {
-    Team        = var.team_name
-    Environment = var.environment
-    Creator     = var.creator
-  }
-
-}
-
 resource "aws_ecs_cluster" "default_ecs_cluster" {
   name = "${var.name}-cluster"
 
